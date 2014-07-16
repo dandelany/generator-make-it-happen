@@ -6,6 +6,8 @@
     "dependencies": {},
     "devDependencies": {
         "grunt": "^0.4.5",
+        "load-grunt-tasks": "^0.6.0",
+
         "grunt-contrib-watch": "^0.6.1",
         "browserify": "^4.2.0",
         "grunt-browserify": "^2.1.3",
