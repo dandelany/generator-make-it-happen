@@ -18,24 +18,39 @@ module.exports = function(grunt) {
             '{,*/}*.html',
             'styles/fonts/{,*/}*.*'
         ],
+        // add any additional js/less/html files to build here:
         jsToBuild: ['scripts/main.js'],
-        lessToBuild: ['styles/main.less']
+        lessToBuild: ['styles/main.less'],
+        htmlToBuild: ['index.html']
     };
-    var makeFilesObj = function(fileNames, buildDir, srcDir) {
-        return _.object(_.map(fileNames, function(fileName) {
-            return [buildDir + '/' + fileName, srcDir + '/' + fileName];
+
+    // helper functions for munging paths
+    var prependPath = function(fileName, path) { return [path, '/', fileName].join(''); };
+    var prependSrc =       function(fileName) { return prependPath(fileName, config.src); };
+    var prependBuildDev =  function(fileName) { return prependPath(fileName, config.buildDev); };
+    var prependBuildDist = function(fileName) { return prependPath(fileName, config.buildDist); };
+    var builtExtension = function(fileName) {  return fileName.replace(/\.less$/, '.css').replace(/\.jsx$/, '.js') };
+
+    // some tasks expect object format {'[built file path]': '[source file path]'}
+    var makeBuildSrcPathObj = function(fileNames, buildDir) {
+        return _.object(fileNames.map(function(fileName) {
+            return [prependPath(builtExtension(fileName), buildDir), prependSrc(fileName)];
         }));
     };
-    config.jsFilesDev =    makeFilesObj(config.jsToBuild, config.buildDev, config.src);
-    config.jsFilesDist =   makeFilesObj(config.jsToBuild, config.buildDist, config.src);
-    config.lessFilesDev =  makeFilesObj(config.lessToBuild, config.buildDev, config.src);
-    config.lessFilesDist = makeFilesObj(config.lessToBuild, config.buildDist, config.src);
+    // or {'[built file path]': '[built file path]'} if we've already moved it to build directory
+    var makeBuildBuildPathObj = function(fileNames, buildDir) {
+        return _.object(fileNames.map(function(fileName) {
+            var buildPath = prependPath(builtExtension(fileName), buildDir);
+            return [buildPath, buildPath];
+        }));
+    };
 
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         config: config,
 
-        clean: { // clean out old files from build folders
+        // clean out old files from build folders
+        clean: {
             dev: {
                 files: [{
                     dot: true,
@@ -50,7 +65,8 @@ module.exports = function(grunt) {
             }
         },
 
-        copy: { // copy static asset files from src/ to build/[dev or dist]
+        // copy static asset files from src/ to build/[dev or dist]
+        copy: {
             dev: {
                 files: [
                     {
@@ -75,70 +91,89 @@ module.exports = function(grunt) {
             }
         },
 
-        browserify: { // bundle JS with browserify
+        // bundle JS with browserify
+        browserify: {
             dev: {
                 options: { bundleOptions: { debug: true } },
-                files: config.jsFilesDev
+                files: makeBuildSrcPathObj(config.jsToBuild, config.buildDev)
             },
             dist: {
-                files: config.jsFilesDist
+                files: makeBuildSrcPathObj(config.jsToBuild, config.buildDist)
             }
         },
 
-        less: { // compile LESS to CSS
+        // compile LESS to CSS
+        less: {
             dev: {
-                files: config.lessFilesDev
+                files: makeBuildSrcPathObj(config.lessToBuild, config.buildDev)
             },
             dist: {
-                files: config.lessFilesDist
+                files: makeBuildSrcPathObj(config.lessToBuild, config.buildDist)
             }
         },
 
-        htmlbuild: { // replace tags in index.html to point to minified or built js/css
+        // replace placeholder tags in index.html to point to built js/css
+        htmlbuild: {
             dev: {
-                src: '<%%= config.buildDev %>/index.html',
+                src: config.htmlToBuild.map(prependBuildDev),
                 dest: '<%%= config.buildDev %>/',
                 options: {
                     beautify: true,
-                    scripts: { js: '<%%= config.buildDev %>/scripts/main.js' },
-                    styles: { css: '<%%= config.buildDev %>/styles/main.css' }
+                    scripts: { js: config.jsToBuild.map(prependBuildDev).map(builtExtension) },
+                    styles: { css: config.lessToBuild.map(prependBuildDev).map(builtExtension) }
                 }
             },
             dist: {
-                src: '<%%= config.buildDist %>/index.html',
+                src: config.htmlToBuild.map(prependBuildDist),
                 dest: '<%%= config.buildDist %>/',
                 options: {
-                    scripts: { js: '<%%= config.buildDist %>/scripts/main.js' },
-                    styles: { css: '<%%= config.buildDist %>/styles/main.css' }
+                    scripts: { js: config.jsToBuild.map(prependBuildDist).map(builtExtension) },
+                    styles: { css: config.lessToBuild.map(prependBuildDist).map(builtExtension) }
                 }
             }
         },
 
-        connect: { // web server for serving files from dist/
+        // run uglify on JS to minify it
+        uglify: {
+            dist: {
+                files: makeBuildBuildPathObj(config.jsToBuild, config.buildDist)
+            }
+        },
+
+        // run cssmin on CSS to minify it
+        cssmin: {
+            dist: {
+                files: makeBuildBuildPathObj(config.lessToBuild, config.buildDist)
+            }
+        },
+
+        // web server for serving files from build/[dev or dist]
+        connect: {
             dev: {
                 options: {
                     port: '<%= devPort %>',
-                    base: '<%%= config.buildDev %>'
+                    base: config.buildDev
                 }
             },
             dist: {
                 options: {
                     port: '<%= devPort %>',
-                    base: '<%%= config.buildDist %>'
+                    base: config.buildDist
                 }
             }
         },
 
+        // watch files for changes and run appropriate tasks to rebuild build/dev
         watch: {
             grunt: {
-                files: 'Gruntfile.js' // reload Gruntfile when it changes
+                files: 'Gruntfile.js'
             },
             less: {
-                files: '<%%= config.src %>/styles/*.less',
+                files: '<%%= config.src %>/styles/*.*',
                 tasks: ['less:dev']
             },
             browserify: {
-                files: '<%%= config.src %>/scripts/**/*.js',
+                files: '<%%= config.src %>/scripts/**/*.*',
                 tasks: ['browserify:dev']
             },
             copy: {
@@ -155,19 +190,38 @@ module.exports = function(grunt) {
         }
     });
 
-
+    // Dev tasks
     grunt.registerTask('buildDev', [
-        'clean:dev',      // clean old files out of build/
+        'clean:dev',      // clean old files out of build/dev
         'copy:dev',       // copy static asset files from app/ to build/dev
         'browserify:dev', // bundle JS with browserify
         'less:dev',       // compile LESS to CSS
         'htmlbuild:dev'   // replace tags in index.html to point to built js/css
     ]);
-
-    grunt.registerTask('debug', [
+    grunt.registerTask('serveDev', [
         'buildDev',
         'connect:dev',     // web server for serving files from build/dev
         'watch'            // watch src files for changes and rebuild when necessary
     ]);
-    grunt.registerTask('serve', ['debug']);
+
+    // Distribution tasks
+    grunt.registerTask('buildDist', [
+        'clean:dist',      // clean old files out of build/dist
+        'copy:dist',       // copy static asset files from app/ to build/dist
+        'browserify:dist', // bundle JS with browserify
+        'less:dist',       // compile LESS to CSS
+        'htmlbuild:dist',  // replace tags in index.html to point to built js/css
+        'uglify:dist',     // minify JS files
+        'cssmin:dist'      // minify CSS files
+    ]);
+    grunt.registerTask('serveDist', [
+        'buildDist',
+        'connect:dev',     // web server for serving files from build/dev
+        'watch'            // watch src files for changes and rebuild when necessary
+    ]);
+
+    // Task aliases
+    grunt.registerTask('build', ['buildDist']);
+    grunt.registerTask('serve', ['serveDev']);
+    grunt.registerTask('debug', ['serveDev']);
 };
