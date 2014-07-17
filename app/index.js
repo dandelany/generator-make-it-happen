@@ -43,11 +43,11 @@ module.exports = yeoman.generators.Base.extend({
                 name: 'jQuery',
                 value: 'includeJQuery',
                 checked: true
-            }/*, {
+            }, {
                 name: 'Bacon.js functional reactive programming library',
                 value: 'includeBacon',
                 checked: false
-            }, {
+            }/*, {
                 name: 'D3.js (Data Driven Documents)',
                 value: 'includeD3',
                 checked: false
