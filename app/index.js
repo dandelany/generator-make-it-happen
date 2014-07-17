@@ -51,11 +51,11 @@ module.exports = yeoman.generators.Base.extend({
                 name: 'D3.js (Data Driven Documents)',
                 value: 'includeD3',
                 checked: false
-            }, {
+            }*/, {
                 name: 'Material Design color palette',
                 value: 'includeColors',
                 checked: true
-            }, {
+            }/*, {
                 name: 'Ionicons icon font',
                 value: 'includeIonicons',
                 checked: true
@@ -79,7 +79,7 @@ module.exports = yeoman.generators.Base.extend({
             this.devPort = answers.devPort;
 
             var features = answers.features;
-            var hasFeature = function(f) { return features && features.indexOf(f) >= 0; }
+            var hasFeature = function(f) { return features && features.indexOf(f) >= 0; };
             this.includeJQuery = hasFeature('includeJQuery');
             this.includeBacon = hasFeature('includeBacon');
             this.includeD3 = hasFeature('includeD3');
@@ -104,22 +104,23 @@ module.exports = yeoman.generators.Base.extend({
 
         this.template('_package.json', 'package.json');
         this.template('Gruntfile.js', 'Gruntfile.js');
-        //this.template('gitignore', '.gitignore');
-        //this.template('gitattributes', '.gitattributes');
+//        this.template('gitignore', '.gitignore');
+//        this.template('gitattributes', '.gitattributes');
         this.template('README.md', 'README.md');
 
-//        this.directory('src/scripts');
-//        this.directory('src/styles');
         this.directory('src');
 
+        if(!this.includeColors) { this.dest.delete('src/styles/palette.less'); }
 
-        this.remote('driftyco', 'ionicons', 'v1.5.2', function(err, remote) {
-            //remote.copy('fonts/ionicons.ttf', 'src/ionicons.ttf');
-            remote.directory('fonts', 'src/styles/fonts');
+        if(this.includeIonicons) {
+            this.remote('driftyco', 'ionicons', 'v1.5.2', function(err, remote) {
+                //remote.copy('fonts/ionicons.ttf', 'src/ionicons.ttf');
+                remote.directory('fonts', 'src/styles/fonts');
+                done();
+            });
+        } else {
             done();
-        });
-
-        //this.gruntfile.insertConfig("compass",  "{ watch: { watch: true } }")
+        }
     },
     installing: function() {
         //var done = this.async();
