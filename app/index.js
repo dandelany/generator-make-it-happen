@@ -40,10 +40,34 @@ module.exports = yeoman.generators.Base.extend({
             name: 'features',
             message: "Okey-doke. What else would you like?",
             choices: [{
+                name: 'jQuery',
+                value: 'includeJQuery',
+                checked: true
+            }/*, {
+                name: 'Bacon.js functional reactive programming library',
+                value: 'includeBacon',
+                checked: false
+            }, {
+                name: 'D3.js (Data Driven Documents)',
+                value: 'includeD3',
+                checked: false
+            }, {
+                name: 'Material Design color palette',
+                value: 'includeColors',
+                checked: true
+            }, {
                 name: 'Ionicons icon font',
                 value: 'includeIonicons',
                 checked: true
-            }]
+            }, {
+                name: 'React + JSX support',
+                value: 'includeReact',
+                checked: false
+            }, {
+                name: 'JSHint Javascript linter',
+                value: 'includeJSHint',
+                checked: false
+            }*/]
         }];
 
         this.prompt(prompts, function(answers) {
@@ -56,7 +80,13 @@ module.exports = yeoman.generators.Base.extend({
 
             var features = answers.features;
             var hasFeature = function(f) { return features && features.indexOf(f) >= 0; }
+            this.includeJQuery = hasFeature('includeJQuery');
+            this.includeBacon = hasFeature('includeBacon');
+            this.includeD3 = hasFeature('includeD3');
+            this.includeColors = hasFeature('includeColors');
             this.includeIonicons = hasFeature('includeIonicons');
+            this.includeReact = hasFeature('includeReact');
+            this.includeJSHint = hasFeature('includeJSHint');
 
             done();
         }.bind(this));
