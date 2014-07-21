@@ -16,7 +16,7 @@ module.exports = function(grunt) {
             // if you want to recursively match all subfolders: 'test/spec/**/*.js'
             '{,*/}*.{gif,jpeg,jpg,png,webp,gif,ico}',
             '{,*/}*.html',
-            'styles/fonts/{,*/}*.*'
+            'fonts/{,*/}*.*'
         ],
         // add any additional js/less/html files to build here:
         jsToBuild: ['scripts/main.js'],
@@ -179,7 +179,7 @@ module.exports = function(grunt) {
             copy: {
                 files: [
                     '<%%= config.src %>/{,*/}*.{gif,jpeg,jpg,png,webp,gif,ico}',
-                    '<%%= config.src %>styles/fonts/{,*/}*.*'
+                    '<%%= config.src %>/fonts/{,*/}*.*'
                 ],
                 tasks: ['copy:dev']
             },

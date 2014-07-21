@@ -52,11 +52,11 @@ module.exports = yeoman.generators.Base.extend({
                 name: 'Material Design color palette',
                 value: 'includeColors',
                 checked: true
-            }/*, {
+            }, {
                 name: 'Ionicons icon font',
                 value: 'includeIonicons',
                 checked: true
-            }, {
+            }/*, {
                 name: 'React + JSX support',
                 value: 'includeReact',
                 checked: false
@@ -100,23 +100,23 @@ module.exports = yeoman.generators.Base.extend({
 
         // copy src directory and create placeholder directory for fonts
         this.directory('src');
-        this.mkdir('src/styles/fonts');
+        this.mkdir('src/fonts');
 
         // create build directory
         this.mkdir('build');
         this.mkdir('build/dev');
         this.mkdir('build/dist');
 
-        // optional parts, do these conditionally based on required features
+        // remaining are optional parts, do these conditionally based on required features
         // copy color palette
         var copyFromOptional = function(path) { return this.copy('optional/' + path, path); }.bind(this);
-        if(this.includeColors) { copyFromOptional('src/styles/palette.less'); }
+        if(this.includeColors) { copyFromOptional('src/styles/lib/palette.less'); }
 
-        // get Ionicons from github repo and copy
+        // get Ionicons from its github repo and copy relevant files (font files + *.less)
         if(this.includeIonicons) {
             this.remote('driftyco', 'ionicons', 'v1.5.2', function(err, remote) {
-                remote.directory('less', 'src/styles');
-                remote.directory('fonts', 'src/styles/fonts');
+                remote.directory('less', 'src/styles/lib/ionicons');
+                remote.directory('fonts', 'src/fonts');
                 done();
             });
         } else {

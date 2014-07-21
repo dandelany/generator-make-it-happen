@@ -19,6 +19,9 @@
     <h3>by <%= authorName %></h3>
     <p><%= appDescription %></p>
 
+    <% if (includeIonicons) { %>
+    <div><span class="ion-checkmark-circled"></span> Ionicons successfully installed</div>
+    <% } %>
     <!-- build:script js --><!-- /build -->
 </body>
 </html>
