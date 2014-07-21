@@ -5,10 +5,7 @@ module.exports = yeoman.generators.Base.extend({
         yeoman.generators.Base.apply(this, arguments);
     },
     askFor: function() {
-        this._askForProjectInfo();
-        this.pkg = require('../package.json')
-    },
-    _askForProjectInfo: function() {
+        this.pkg = require('../package.json');
         var done = this.async();
         var prompts = [{
             type: 'input',
@@ -94,27 +91,31 @@ module.exports = yeoman.generators.Base.extend({
     writing: function() {
         var done = this.async();
 
-        this.mkdir('src');
-        this.mkdir('src/scripts');
-        this.mkdir('src/styles');
-        this.mkdir('src/styles/fonts');
-        this.mkdir('build');
-        this.mkdir('build/dev');
-        this.mkdir('build/dist');
-
+        // copy root-level files
         this.template('_package.json', 'package.json');
         this.template('Gruntfile.js', 'Gruntfile.js');
 //        this.template('gitignore', '.gitignore');
 //        this.template('gitattributes', '.gitattributes');
         this.template('README.md', 'README.md');
 
+        // copy src directory and create placeholder directory for fonts
         this.directory('src');
+        this.mkdir('src/styles/fonts');
 
-        if(!this.includeColors) { this.dest.delete('src/styles/palette.less'); }
+        // create build directory
+        this.mkdir('build');
+        this.mkdir('build/dev');
+        this.mkdir('build/dist');
 
+        // optional parts, do these conditionally based on required features
+        // copy color palette
+        var copyFromOptional = function(path) { return this.copy('optional/' + path, path); }.bind(this);
+        if(this.includeColors) { copyFromOptional('src/styles/palette.less'); }
+
+        // get Ionicons from github repo and copy
         if(this.includeIonicons) {
             this.remote('driftyco', 'ionicons', 'v1.5.2', function(err, remote) {
-                //remote.copy('fonts/ionicons.ttf', 'src/ionicons.ttf');
+                remote.directory('less', 'src/styles');
                 remote.directory('fonts', 'src/styles/fonts');
                 done();
             });
@@ -123,9 +124,6 @@ module.exports = yeoman.generators.Base.extend({
         }
     },
     installing: function() {
-        //var done = this.async();
-        //this.npmInstall(['lodash'], {saveDev: true}, done);
-        //this.log(this.destinationRoot());
         //this.log(this.sourceRoot());
         this.installDependencies();
     }
