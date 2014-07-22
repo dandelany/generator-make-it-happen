@@ -1,4 +1,7 @@
 var yeoman = require('yeoman-generator');
+var yosay = require('yosay');
+var asciify = require('asciify');
+var chalk = require('chalk');
 
 module.exports = yeoman.generators.Base.extend({
     constructor: function() {
@@ -7,6 +10,8 @@ module.exports = yeoman.generators.Base.extend({
     askFor: function() {
         this.pkg = require('../package.json');
         var done = this.async();
+        this.log(yosay("Heyo! Let's make some code happen."));
+
         var prompts = [{
             type: 'input',
             name: 'appName',
@@ -41,14 +46,6 @@ module.exports = yeoman.generators.Base.extend({
                 value: 'includeJQuery',
                 checked: true
             }, {
-                name: 'Bacon.js functional reactive programming library',
-                value: 'includeBacon',
-                checked: false
-            }/*, {
-                name: 'D3.js (Data Driven Documents)',
-                value: 'includeD3',
-                checked: false
-            }*/, {
                 name: 'Material Design color palette',
                 value: 'includeColors',
                 checked: true
@@ -56,6 +53,14 @@ module.exports = yeoman.generators.Base.extend({
                 name: 'Ionicons icon font',
                 value: 'includeIonicons',
                 checked: true
+            }, {
+                name: 'Bacon.js functional reactive programming library',
+                value: 'includeBacon',
+                checked: false
+            }, {
+                name: 'D3.js (Data Driven Documents)',
+                value: 'includeD3',
+                checked: false
             }/*, {
                 name: 'React + JSX support',
                 value: 'includeReact',
@@ -84,12 +89,19 @@ module.exports = yeoman.generators.Base.extend({
             this.includeIonicons = hasFeature('includeIonicons');
             this.includeReact = hasFeature('includeReact');
             this.includeJSHint = hasFeature('includeJSHint');
-
             done();
         }.bind(this));
     },
-    writing: function() {
+    showBanner: function() {
         var done = this.async();
+        this.log(asciify("It's happening!", {font:'standard'}, function(e,t) {
+            this.log(chalk.blue(t));
+            done();
+        }.bind(this)));
+    },
+    writing: function() {
+//        var done = this.async();
+//        var done2 = this.async();
 
         // copy root-level files
         this.template('_package.json', 'package.json');
@@ -100,6 +112,7 @@ module.exports = yeoman.generators.Base.extend({
 
         // copy src directory and create placeholder directory for fonts
         this.directory('src');
+        this.mkdir('src/styles/lib');
         this.mkdir('src/fonts');
 
         // create build directory
@@ -111,16 +124,37 @@ module.exports = yeoman.generators.Base.extend({
         // copy color palette
         var copyFromOptional = function(path) { return this.copy('optional/' + path, path); }.bind(this);
         if(this.includeColors) { copyFromOptional('src/styles/lib/palette.less'); }
-
+    },
+    _fetchRemote: function(user, repo, tag, cb, cbArgs) {
+        // fetch a remote github repo and kill the process if it fails
+        cbArgs = cbArgs || [];
+        this.remote(user, repo, tag, function(err, remote) {
+            if(err) {
+                var errMsg = [err, "Error fetching", user + "'s", repo, tag, "from Github. Aborting :("].join(" ");
+                this.log(chalk.bgRed(errMsg));
+                process.exit(1);
+            }
+            this.log(chalk.green(["Fetched from Github:", user + "'s", repo, tag, "\n"].join(" ")));
+            cb.apply(this, [err, remote]);
+        }.bind(this), true);
+    },
+    fetchLessHat: function() {
+        // get LESS Hat from its github repo and copy relevant files
+        var done = this.async();
+        this._fetchRemote('madebysource', 'lesshat', 'v3.0.2', function(err, remote){
+            remote.copy('build/lesshat.less', 'src/styles/lib/lesshat.less');
+            done();
+        });
+    },
+    fetchIonicons: function() {
         // get Ionicons from its github repo and copy relevant files (font files + *.less)
         if(this.includeIonicons) {
-            this.remote('driftyco', 'ionicons', 'v1.5.2', function(err, remote) {
+            var done = this.async();
+            this._fetchRemote('driftyco', 'ionicons', 'v1.5.2', function(err, remote){
                 remote.directory('less', 'src/styles/lib/ionicons');
                 remote.directory('fonts', 'src/fonts');
                 done();
             });
-        } else {
-            done();
         }
     },
     installing: function() {

@@ -1,7 +1,8 @@
 var _ = require('underscore');<% if (includeJQuery) { %>
 var $ = require('jquery');<% } %><% if (includeBacon) { %>
 var Bacon = require('baconjs');
-$.fn.asEventStream = Bacon.$.asEventStream;<% } %>
+$.fn.asEventStream = Bacon.$.asEventStream;<% } %><% if (includeD3) { %>
+var d3 = require('d3');<% } %>
 
 // App javascript goes here
 

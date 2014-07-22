@@ -21,7 +21,8 @@
 
         <% if (includeJQuery) { %>
         "jquery": "^2.1.1",<% } %><% if (includeBacon) { %>
-        "baconjs": "^0.7.18",<% } %>
+        "baconjs": "^0.7.18",<% } %><% if (includeD3) { %>
+        "d3": "^3.4.11",<% } %>
         "underscore": "^1.6.0"
     }
 }
