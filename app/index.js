@@ -38,6 +38,11 @@ module.exports = yeoman.generators.Base.extend({
             message: "Which port would you like to serve the dev build from?",
             default: '4000'
         }, {
+            type: 'input',
+            name: 'repoUrl',
+            message: "If the project has a remote Git repo, what is its URL? (leave blank if not)",
+            default: ''
+        }, {
             type: 'checkbox',
             name: 'features',
             message: "Okey-doke. What else would you like?",
@@ -54,6 +59,10 @@ module.exports = yeoman.generators.Base.extend({
                 value: 'includeIonicons',
                 checked: true
             }, {
+                name: 'React + JSX support',
+                value: 'includeReact',
+                checked: false
+            }, {
                 name: 'Bacon.js functional reactive programming library',
                 value: 'includeBacon',
                 checked: false
@@ -62,10 +71,6 @@ module.exports = yeoman.generators.Base.extend({
                 value: 'includeD3',
                 checked: false
             }/*, {
-                name: 'React + JSX support',
-                value: 'includeReact',
-                checked: false
-            }, {
                 name: 'JSHint Javascript linter',
                 value: 'includeJSHint',
                 checked: false
@@ -79,6 +84,7 @@ module.exports = yeoman.generators.Base.extend({
             this.authorName = answers.authorName;
             this.authorEmail = answers.authorEmail;
             this.devPort = answers.devPort;
+            this.repoUrl = answers.repoUrl;
 
             var features = answers.features;
             var hasFeature = function(f) { return features && features.indexOf(f) >= 0; };
@@ -100,9 +106,6 @@ module.exports = yeoman.generators.Base.extend({
         }.bind(this)));
     },
     writing: function() {
-//        var done = this.async();
-//        var done2 = this.async();
-
         // copy root-level files
         this.template('_package.json', 'package.json');
         this.template('Gruntfile.js', 'Gruntfile.js');
@@ -110,7 +113,7 @@ module.exports = yeoman.generators.Base.extend({
 //        this.template('gitattributes', '.gitattributes');
         this.template('README.md', 'README.md');
 
-        // copy src directory and create placeholder directory for fonts
+        // copy src directory and create placeholder directories
         this.directory('src');
         this.mkdir('src/styles/lib');
         this.mkdir('src/fonts');
@@ -124,6 +127,7 @@ module.exports = yeoman.generators.Base.extend({
         // copy color palette
         var copyFromOptional = function(path) { return this.copy('optional/' + path, path); }.bind(this);
         if(this.includeColors) { copyFromOptional('src/styles/lib/palette.less'); }
+        if(this.includeReact) { copyFromOptional('src/scripts/react-example.jsx'); }
     },
     _fetchRemote: function(user, repo, tag, cb, cbArgs) {
         // fetch a remote github repo and kill the process if it fails
@@ -158,7 +162,6 @@ module.exports = yeoman.generators.Base.extend({
         }
     },
     installing: function() {
-        //this.log(this.sourceRoot());
         this.installDependencies();
     }
 });

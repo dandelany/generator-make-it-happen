@@ -94,10 +94,16 @@ module.exports = function(grunt) {
         // bundle JS with browserify
         browserify: {
             dev: {
-                options: { bundleOptions: { debug: true } },
+                options: {<% if(includeReact) { %>
+                    transform: ['reactify'],<% } %>
+                    bundleOptions: { debug: true }
+                },
                 files: makeBuildSrcPathObj(config.jsToBuild, config.buildDev)
             },
             dist: {
+                options: {<% if(includeReact) { %>
+                    transform: ['reactify'],<% } %>
+                },
                 files: makeBuildSrcPathObj(config.jsToBuild, config.buildDist)
             }
         },
