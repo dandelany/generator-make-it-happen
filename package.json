@@ -1,7 +1,7 @@
 {
   "name": "generator-make-it-happen",
   "description": "Yeoman generator for frontend projects",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Dan Delany <dan.delany@gmail.com>",
   "keywords": [
     "yeoman-generator"

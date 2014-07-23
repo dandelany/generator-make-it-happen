@@ -129,7 +129,7 @@ module.exports = yeoman.generators.Base.extend({
         if(this.includeColors) { copyFromOptional('src/styles/lib/palette.less'); }
         if(this.includeReact) { copyFromOptional('src/scripts/react-example.jsx'); }
     },
-    _fetchRemote: function(user, repo, tag, cb, cbArgs) {
+    _fetchRemoteOld: function(user, repo, tag, cb, cbArgs) {
         // fetch a remote github repo and kill the process if it fails
         cbArgs = cbArgs || [];
         this.remote(user, repo, tag, function(err, remote) {
@@ -142,22 +142,61 @@ module.exports = yeoman.generators.Base.extend({
             cb.apply(this, [err, remote]);
         }.bind(this), true);
     },
+    _fetchRemote: function(options) {
+        if(!options || !options.user || !options.repo || !options.tag) {
+            this.log(chalk.bgRed("Error: Fetching a Github repo requires user, repo and tag parameters."));
+            process.exit(1);
+        }
+        // fetch a remote github repo and kill the process if it fails
+        this.remote(options.user, options.repo, options.tag, function(err, remote) {
+            if(err) {
+                this.log(chalk.bgRed([err, "Error fetching", options.user + "'s", options.repo,
+                                      options.tag, "from Github. Aborting :("].join(" ")));
+                process.exit(1);
+            }
+            this.log(chalk.green(["Fetched from Github:", options.user + "'s", options.repo,
+                                  options.tag, "\n"].join(" ")));
+            // call the provided callback with err, remote, and any other args provided
+            if(options.cb) { options.cb.apply(this, [err, remote].concat(options.cbArgs || [])); }
+            // and then call the "done" async function to show we're done with asynchronous method
+            if(options.asyncDone) { options.asyncDone(); }
+        }.bind(this), true);
+    },
+    fetchNormalize: function() {
+        this._fetchRemote({
+            user: 'necolas',
+            repo: 'normalize.css',
+            tag: '3.0.1',
+            asyncDone: this.async(),
+            cb: function(err, remote) {
+                remote.copy('normalize.css', 'src/styles/lib/normalize.css');
+            }
+        })
+    },
     fetchLessHat: function() {
         // get LESS Hat from its github repo and copy relevant files
-        var done = this.async();
-        this._fetchRemote('madebysource', 'lesshat', 'v3.0.2', function(err, remote){
-            remote.copy('build/lesshat.less', 'src/styles/lib/lesshat.less');
-            done();
+        this._fetchRemote({
+            user: 'madebysource',
+            repo: 'lesshat',
+            tag: 'v3.0.2',
+            asyncDone: this.async(),
+            cb: function(err, remote) {
+                remote.copy('build/lesshat.less', 'src/styles/lib/lesshat.less');
+            }
         });
     },
     fetchIonicons: function() {
         // get Ionicons from its github repo and copy relevant files (font files + *.less)
         if(this.includeIonicons) {
-            var done = this.async();
-            this._fetchRemote('driftyco', 'ionicons', 'v1.5.2', function(err, remote){
-                remote.directory('less', 'src/styles/lib/ionicons');
-                remote.directory('fonts', 'src/fonts');
-                done();
+            this._fetchRemote({
+                user: 'driftyco',
+                repo: 'ionicons',
+                tag: 'v1.5.2',
+                asyncDone: this.async(),
+                cb: function(err, remote) {
+                    remote.directory('less', 'src/styles/lib/ionicons');
+                    remote.directory('fonts', 'src/fonts');
+                }
             });
         }
     },
