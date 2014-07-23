@@ -2,6 +2,7 @@ var yeoman = require('yeoman-generator');
 var yosay = require('yosay');
 var asciify = require('asciify');
 var chalk = require('chalk');
+var child_process = require('child_process');
 
 module.exports = yeoman.generators.Base.extend({
     constructor: function() {
@@ -75,6 +76,11 @@ module.exports = yeoman.generators.Base.extend({
                 value: 'includeJSHint',
                 checked: false
             }*/]
+        }, {
+            type: 'input',
+            name: 'webFont',
+            message: "If you'd like to install a Google Web Font, what is its name? (leave blank if not)",
+            default: ''
         }];
 
         this.prompt(prompts, function(answers) {
@@ -85,6 +91,7 @@ module.exports = yeoman.generators.Base.extend({
             this.authorEmail = answers.authorEmail;
             this.devPort = answers.devPort;
             this.repoUrl = answers.repoUrl;
+            this.webFont = answers.webFont;
 
             var features = answers.features;
             var hasFeature = function(f) { return features && features.indexOf(f) >= 0; };
@@ -97,6 +104,11 @@ module.exports = yeoman.generators.Base.extend({
             this.includeJSHint = hasFeature('includeJSHint');
             done();
         }.bind(this));
+    },
+    _abort: function(errMsg) {
+        this.log(chalk.red("" + errMsg));
+        this.log(chalk.bgRed("!!! Aborting, sorry friend :( !!!"));
+        process.exit(1);
     },
     showBanner: function() {
         var done = this.async();
@@ -129,40 +141,22 @@ module.exports = yeoman.generators.Base.extend({
         if(this.includeColors) { copyFromOptional('src/styles/lib/palette.less'); }
         if(this.includeReact) { copyFromOptional('src/scripts/react-example.jsx'); }
     },
-    _fetchRemoteOld: function(user, repo, tag, cb, cbArgs) {
-        // fetch a remote github repo and kill the process if it fails
-        cbArgs = cbArgs || [];
-        this.remote(user, repo, tag, function(err, remote) {
-            if(err) {
-                var errMsg = [err, "Error fetching", user + "'s", repo, tag, "from Github. Aborting :("].join(" ");
-                this.log(chalk.bgRed(errMsg));
-                process.exit(1);
-            }
-            this.log(chalk.green(["Fetched from Github:", user + "'s", repo, tag, "\n"].join(" ")));
-            cb.apply(this, [err, remote]);
-        }.bind(this), true);
-    },
     _fetchRemote: function(options) {
         if(!options || !options.user || !options.repo || !options.tag) {
-            this.log(chalk.bgRed("Error: Fetching a Github repo requires user, repo and tag parameters."));
-            process.exit(1);
+            this._abort("Error: Fetching a Github repo requires user, repo and tag parameters.");
         }
         // fetch a remote github repo and kill the process if it fails
         this.remote(options.user, options.repo, options.tag, function(err, remote) {
             if(err) {
-                this.log(chalk.bgRed([err, "Error fetching", options.user + "'s", options.repo,
-                                      options.tag, "from Github. Aborting :("].join(" ")));
-                process.exit(1);
+                this._abort([err, "Error fetching", options.user + "'s", options.repo, options.tag, "from Github."].join(" "));
             }
-            this.log(chalk.green(["Fetched from Github:", options.user + "'s", options.repo,
-                                  options.tag, "\n"].join(" ")));
+            this.log(chalk.green(["Fetched from Github:", options.user + "'s", options.repo, options.tag, "\n"].join(" ")));
             // call the provided callback with err, remote, and any other args provided
             if(options.cb) { options.cb.apply(this, [err, remote].concat(options.cbArgs || [])); }
             // and then call the "done" async function to show we're done with asynchronous method
             if(options.asyncDone) { options.asyncDone(); }
-        }.bind(this), true);
+        }.bind(this)/*, true*/);
     },
-    
     fetchNormalize: function() {
         // get Normalize.css from its github repo and copy relevant file
         this._fetchRemote({
@@ -202,7 +196,37 @@ module.exports = yeoman.generators.Base.extend({
             });
         }
     },
-    installing: function() {
-        this.installDependencies();
+    install: {
+        installWebFonts: function() {
+            if(this.webFont) {
+                var done = this.async();
+                var fontName = this.webFont;
+                var fontNameNoSpace = fontName.replace(/\s/g,'');
+                var cmdToRun = ['cd', '"' + this.destinationRoot() + '/src/fonts" ;',
+                        this.sourceRoot() + '/../../node_modules/goog-webfont-dl/index.js -a -f', '"' + fontName + '"',
+                        '-o ../styles/lib/' + fontNameNoSpace + '.css', '-p ../fonts/' + fontNameNoSpace].join(' ');
+                this.log("\n" + chalk.yellow(cmdToRun));
+
+                child_process.exec(cmdToRun, {}, function(err, stdout, stderr) {
+                    if(err) { this._abort("Error installing Google Web Fonts: " + err); }
+                    this.log("\n" + chalk.green(stdout));
+
+                    if(fontName != fontNameNoSpace) {
+                        var moveCmd = ['mv', '"' + this.destinationRoot() + '/src/fonts/' + fontName + '"',
+                                '"' + this.destinationRoot() + '/src/fonts/' + fontNameNoSpace + '"'].join(' ');
+                        this.log(chalk.yellow(moveCmd));
+                        child_process.exec(moveCmd, {}, function(err, stdout, stderr) {
+                            if(err) { this._abort("Error installing Google Web Fonts: " + err); }
+                            done();
+                        }.bind(this));
+                    } else {
+                        done();
+                    }
+                }.bind(this));
+            }
+        },
+        installDeps: function() {
+//            this.installDependencies();
+        }
     }
 });

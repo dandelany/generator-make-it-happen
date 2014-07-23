@@ -175,7 +175,7 @@ module.exports = function(grunt) {
                 files: 'Gruntfile.js'
             },
             less: {
-                files: '<%%= config.src %>/styles/*.*',
+                files: '<%%= config.src %>/styles/**/*.*',
                 tasks: ['less:dev']
             },
             browserify: {
