@@ -1,6 +1,6 @@
 {
   "name": "generator-make-it-happen",
-  "description": "Yeoman generator for frontend projects",
+  "description": "Yeoman generator for browserify-based frontend projects",
   "version": "0.1.1",
   "author": "Dan Delany <dan.delany@gmail.com>",
   "keywords": [
@@ -10,6 +10,7 @@
     "yeoman-generator": "~0.17.1",
     "asciify": "~1.3.5",
     "yosay": "~0.3.0",
-    "chalk": "~0.5.1"
+    "chalk": "~0.5.1",
+    "goog-webfont-dl": "0.0.3"
   }
 }

@@ -162,7 +162,9 @@ module.exports = yeoman.generators.Base.extend({
             if(options.asyncDone) { options.asyncDone(); }
         }.bind(this), true);
     },
+    
     fetchNormalize: function() {
+        // get Normalize.css from its github repo and copy relevant file
         this._fetchRemote({
             user: 'necolas',
             repo: 'normalize.css',
@@ -174,7 +176,7 @@ module.exports = yeoman.generators.Base.extend({
         })
     },
     fetchLessHat: function() {
-        // get LESS Hat from its github repo and copy relevant files
+        // get LESS Hat from its github repo and copy relevant file
         this._fetchRemote({
             user: 'madebysource',
             repo: 'lesshat',
