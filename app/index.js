@@ -2,7 +2,9 @@ var yeoman = require('yeoman-generator');
 var yosay = require('yosay');
 var asciify = require('asciify');
 var chalk = require('chalk');
+var Promise = require('bluebird');
 var child_process = require('child_process');
+var _ = require('lodash');
 
 module.exports = yeoman.generators.Base.extend({
     constructor: function() {
@@ -44,6 +46,11 @@ module.exports = yeoman.generators.Base.extend({
             message: "If the project has a remote Git repo, what is its URL? (leave blank if not)",
             default: ''
         }, {
+            type: 'input',
+            name: 'webFonts',
+            message: "If you'd like to install any Google Web Fonts, enter their names, separated by commas. (leave blank if not)",
+            default: ''
+        }, {
             type: 'checkbox',
             name: 'features',
             message: "Okey-doke. What else would you like?",
@@ -76,11 +83,6 @@ module.exports = yeoman.generators.Base.extend({
                 value: 'includeJSHint',
                 checked: false
             }*/]
-        }, {
-            type: 'input',
-            name: 'webFont',
-            message: "If you'd like to install a Google Web Font, what is its name? (leave blank if not)",
-            default: ''
         }];
 
         this.prompt(prompts, function(answers) {
@@ -91,7 +93,7 @@ module.exports = yeoman.generators.Base.extend({
             this.authorEmail = answers.authorEmail;
             this.devPort = answers.devPort;
             this.repoUrl = answers.repoUrl;
-            this.webFont = answers.webFont;
+            this.webFontNames = answers.webFonts.length ? answers.webFonts.split(/,\s*/) : [];
 
             var features = answers.features;
             var hasFeature = function(f) { return features && features.indexOf(f) >= 0; };
@@ -107,7 +109,7 @@ module.exports = yeoman.generators.Base.extend({
     },
     _abort: function(errMsg) {
         this.log(chalk.red("" + errMsg));
-        this.log(chalk.bgRed("!!! Aborting, sorry friend :( !!!"));
+        this.log(chalk.bgRed("!!! Aborting, sorry friend, we did not make it happen today :( !!!"));
         process.exit(1);
     },
     showBanner: function() {
@@ -197,33 +199,49 @@ module.exports = yeoman.generators.Base.extend({
         }
     },
     install: {
-        installWebFonts: function() {
-            if(this.webFont) {
-                var done = this.async();
-                var fontName = this.webFont;
-                var fontNameNoSpace = fontName.replace(/\s/g,'');
-                var cmdToRun = ['cd', '"' + this.destinationRoot() + '/src/fonts" ;',
-                        this.sourceRoot() + '/../../node_modules/goog-webfont-dl/index.js -a -f', '"' + fontName + '"',
-                        '-o ../styles/lib/' + fontNameNoSpace + '.css', '-p ../fonts/' + fontNameNoSpace].join(' ');
-                this.log("\n" + chalk.yellow(cmdToRun));
+        _installWebFont: function(fontName, sourceRoot, destinationRoot) {
+            // install google web fonts by calling npm module goog-webfont-dl via child process
+            var fontNameNoSpace = fontName.replace(/\s/g,'');
+            var cmdToRun = ['cd', '"' + destinationRoot + '/src/fonts" ;',
+                    sourceRoot + '/../../node_modules/goog-webfont-dl/index.js -a -f', '"' + fontName + '"',
+                    '-o ../styles/lib/' + fontNameNoSpace + '.css', '-p ../fonts/' + fontNameNoSpace].join(' ');
+            var outputToLog = "\n" + chalk.yellow(cmdToRun);
 
+            var promise = new Promise(function(resolve, reject) {
+                // make a promise that executes the command(s) and resolves when done
                 child_process.exec(cmdToRun, {}, function(err, stdout, stderr) {
-                    if(err) { this._abort("Error installing Google Web Fonts: " + err); }
-                    this.log("\n" + chalk.green(stdout));
+                    if(err) { reject(err); }
+                    else { outputToLog += "\n" + chalk.green(stdout); }
 
                     if(fontName != fontNameNoSpace) {
-                        var moveCmd = ['mv', '"' + this.destinationRoot() + '/src/fonts/' + fontName + '"',
-                                '"' + this.destinationRoot() + '/src/fonts/' + fontNameNoSpace + '"'].join(' ');
-                        this.log(chalk.yellow(moveCmd));
-                        child_process.exec(moveCmd, {}, function(err, stdout, stderr) {
-                            if(err) { this._abort("Error installing Google Web Fonts: " + err); }
-                            done();
+                        // if Font Name has spaces, move it to FontName instead
+                        var moveCmd = ['mv', '"' + destinationRoot + '/src/fonts/' + fontName + '"',
+                                '"' + destinationRoot + '/src/fonts/' + fontNameNoSpace + '"'].join(' ');
+                        outputToLog += "\n" + chalk.yellow(moveCmd);
+                        child_process.exec(moveCmd, {}, function(err2, stdout2, stderr2) {
+                            if(err2) { reject(err2); }
+                            else { resolve(outputToLog); }
                         }.bind(this));
-                    } else {
-                        done();
-                    }
+                    } else { resolve(outputToLog); }
                 }.bind(this));
-            }
+            }.bind(this));
+            return promise;
+        },
+        installWebFonts: function() {
+            if(!this.webFontNames.length) { return; }
+            var done = this.async();
+            var installPromises = this.webFontNames.map(function(name) {
+                return this.install._installWebFont(name, this.sourceRoot(), this.destinationRoot());
+            }.bind(this));
+
+            Promise.all(installPromises)
+                .then(function(stdouts) {
+                    _.each(stdouts, function(stdout) { this.log("\n" + chalk.green(stdout));}.bind(this));
+                    done();
+                }.bind(this))
+                .catch(function(e) {
+                    this._abort("Error installing Google Web Fonts: " + e);
+                }.bind(this));
         },
         installDeps: function() {
 //            this.installDependencies();
