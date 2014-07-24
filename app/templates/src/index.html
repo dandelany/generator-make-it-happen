@@ -22,6 +22,14 @@
     <% if (includeIonicons) { %>
     <div><span class="ion-happy"></span> Ionicons successfully installed</div>
     <% } %>
+    <% if (webFontNames.length) { %>
+    <div>
+        <h3>Google Web Fonts installed:</h3>
+        <% for(var i=0, len=webFontNames.length; i<len; i++) { %>
+        <p style="font-family: <%= webFontNames[i] %>"><%= webFontNames[i] %></p>
+        <% } %>
+    </div>
+    <% } %>
     <!-- build:script js --><!-- /build -->
 </body>
 </html>

@@ -2,6 +2,9 @@
 @import "lib/lesshat.less"; /* LESS Hat - collection of LESS mixins */<% if (includeColors) { %>
 @import "lib/palette.less"; /* Color palette from Google's Material Design styles */<% } %><% if (includeIonicons) { %>
 @import "lib/ionicons/ionicons.less"; /* Ionicons icon font */<% } %>
+<% if (webFontNames.length) { %>
+/* Google Web Fonts */<% for(var i=0, len=webFontNames.length; i<len; i++) { %>
+@import (less) "lib/<%= webFontNames[i].replace(/\s/g,'') %>.css";<% }} %>
 
 body {
   font-family: Helvetica Neue, Helvetica, Arial, sans-serif;

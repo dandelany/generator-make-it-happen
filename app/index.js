@@ -210,7 +210,7 @@ module.exports = yeoman.generators.Base.extend({
             var promise = new Promise(function(resolve, reject) {
                 // make a promise that executes the command(s) and resolves when done
                 child_process.exec(cmdToRun, {}, function(err, stdout, stderr) {
-                    if(err) { reject(err); }
+                    if(err) { reject(err + fontName ); }
                     else { outputToLog += "\n" + chalk.green(stdout); }
 
                     if(fontName != fontNameNoSpace) {
@@ -219,7 +219,7 @@ module.exports = yeoman.generators.Base.extend({
                                 '"' + destinationRoot + '/src/fonts/' + fontNameNoSpace + '"'].join(' ');
                         outputToLog += "\n" + chalk.yellow(moveCmd);
                         child_process.exec(moveCmd, {}, function(err2, stdout2, stderr2) {
-                            if(err2) { reject(err2); }
+                            if(err2) { reject(err2 + stderr2); }
                             else { resolve(outputToLog); }
                         }.bind(this));
                     } else { resolve(outputToLog); }
