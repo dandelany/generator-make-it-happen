@@ -48,17 +48,14 @@ module.exports = yeoman.generators.Base.extend({
         }, {
             type: 'input',
             name: 'webFonts',
-            message: "If you'd like to install any Google Web Fonts, enter their names, separated by commas. (leave blank if not)",
+            message: "If you'd like to install any Google Web Fonts, enter their names, separated by commas. " +
+                "(see https://www.google.com/fonts for full list) (leave blank if not)",
             default: ''
         }, {
             type: 'checkbox',
             name: 'features',
             message: "Okey-doke. What else would you like?",
             choices: [{
-                name: 'jQuery',
-                value: 'includeJQuery',
-                checked: true
-            }, {
                 name: 'Material Design color palette',
                 value: 'includeColors',
                 checked: true
@@ -97,7 +94,6 @@ module.exports = yeoman.generators.Base.extend({
 
             var features = answers.features;
             var hasFeature = function(f) { return features && features.indexOf(f) >= 0; };
-            this.includeJQuery = hasFeature('includeJQuery');
             this.includeBacon = hasFeature('includeBacon');
             this.includeD3 = hasFeature('includeD3');
             this.includeColors = hasFeature('includeColors');
