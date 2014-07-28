@@ -43,7 +43,8 @@ module.exports = yeoman.generators.Base.extend({
         }, {
             type: 'input',
             name: 'repoUrl',
-            message: "If the project has a remote Git repo, what is its URL? (leave blank if not)",
+            message: "If the project has a remote Git repo, what is its URL? (starts with git:// and ends with .git)" +
+                "(leave blank if not)",
             default: ''
         }, {
             type: 'input',
@@ -119,8 +120,8 @@ module.exports = yeoman.generators.Base.extend({
         // copy root-level files
         this.template('_package.json', 'package.json');
         this.template('Gruntfile.js', 'Gruntfile.js');
-//        this.template('gitignore', '.gitignore');
-//        this.template('gitattributes', '.gitattributes');
+        this.template('gitignore', '.gitignore');
+        this.template('gitattributes', '.gitattributes');
         this.template('README.md', 'README.md');
 
         // copy src directory and create placeholder directories
@@ -134,7 +135,6 @@ module.exports = yeoman.generators.Base.extend({
         this.mkdir('build/dist');
 
         // remaining are optional parts, do these conditionally based on required features
-        // copy color palette
         var copyFromOptional = function(path) { return this.copy('optional/' + path, path); }.bind(this);
         if(this.includeColors) { copyFromOptional('src/styles/lib/palette.less'); }
         if(this.includeReact) { copyFromOptional('src/scripts/react-example.jsx'); }
@@ -206,7 +206,7 @@ module.exports = yeoman.generators.Base.extend({
             var promise = new Promise(function(resolve, reject) {
                 // make a promise that executes the command(s) and resolves when done
                 child_process.exec(cmdToRun, {}, function(err, stdout, stderr) {
-                    if(err) { reject(err + fontName ); }
+                    if(err) { reject(err + fontName); }
                     else { outputToLog += "\n" + chalk.green(stdout); }
 
                     if(fontName != fontNameNoSpace) {
@@ -240,7 +240,7 @@ module.exports = yeoman.generators.Base.extend({
                 }.bind(this));
         },
         installDeps: function() {
-//            this.installDependencies();
+            this.installDependencies();
         }
     }
 });

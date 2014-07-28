@@ -1,11 +1,23 @@
 {
   "name": "generator-make-it-happen",
   "description": "Yeoman generator for browserify-based frontend projects",
-  "version": "0.1.1",
-  "author": "Dan Delany <dan.delany@gmail.com>",
+  "version": "0.2.0",
+  "author": "Dan Delany <dan.delany@gmail.com> (https://github.com/dandelany)",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/dandelany/generator-make-it-happen.git"
+  },
+  "homepage": "https://github.com/dandelany/generator-make-it-happen",
+  "bugs": "https://github.com/dandelany/generator-make-it-happen/issues",
   "keywords": [
-    "yeoman-generator"
+    "yeoman-generator",
+    "scaffold",
+    "browserify",
+    "make-it-happen"
   ],
+  "licenses": [{ "type": "WTFPL" }],
+
+  "main": "app/index.js",
   "dependencies": {
     "yeoman-generator": "~0.17.1",
     "asciify": "~1.3.5",
@@ -14,5 +26,10 @@
     "goog-webfont-dl": "0.0.3",
     "bluebird": "~2.2.2",
     "lodash": "~2.4.1"
-  }
+  },
+  "engines": {
+    "node": ">=0.10.0",
+    "npm": ">=1.2.10"
+  },
+  "preferGlobal": true
 }
