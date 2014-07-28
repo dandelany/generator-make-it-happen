@@ -1,8 +1,10 @@
 # Make It Happen generator
 
-Maintainer: [Dan Delany](http://github.com/dandelany)
+![](http://i.imgur.com/XJklAT1.png)
 
 An opinionated [Yeoman](http://yeoman.io) generator that scaffolds a Browserify-based, Grunt-built web app.
+
+Maintainer: [Dan Delany](http://github.com/dandelany) & the [Enigma.io](http://enigma.io) dev team
 
 ## Features
 
