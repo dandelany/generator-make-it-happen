@@ -4,7 +4,7 @@
 
 An opinionated [Yeoman](http://yeoman.io) generator that scaffolds a Browserify-based, Grunt-built web app.
 
-Maintainer: [Dan Delany](http://github.com/dandelany) & the [Enigma.io](http://enigma.io) dev team
+Maintainer: [Dan Delany](http://github.com/dandelany)
 
 ## Features
 
@@ -42,7 +42,7 @@ Then run the debug server:
 grunt debug
 ```
 
-The development build will be created in `build/dev`. NOTE: files in the `build` directory should never be modified, 
+The development build will be created in `build/dev`. NOTE: files in the `build` directory should never be modified,
 as they will be overwritten whenever the grunt task is run. Make all modifications in `src`.
 
 To build a minified version of the app for distribution, run the 'build' grunt task:
@@ -75,7 +75,7 @@ Bugs and feature requests may be reported on the
 [Github issues page](https://github.com/dandelany/generator-make-it-happen/issues).
 
 Pull requests are welcome. However, this is an opinionated generator, and your opinions on what should be included
-may differ from ours. For this reason, filing an issue to discuss your planned contribution before writing any 
+may differ from ours. For this reason, filing an issue to discuss your planned contribution before writing any
 code is encouraged.
 
 ## License
