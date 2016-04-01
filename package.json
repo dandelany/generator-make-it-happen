@@ -1,7 +1,7 @@
 {
   "name": "generator-make-it-happen",
   "description": "Yeoman generator for browserify-based frontend projects",
-  "version": "0.2.0",
+  "version": "0.2.4",
   "author": "Dan Delany <dan.delany@gmail.com> (https://github.com/dandelany)",
   "repository": {
     "type": "git",
